@@ -1,26 +1,48 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import api from './services/api';
 
 import "./styles.css";
 
 function App() {
+  const [repo, setRepo] = useState([]);
+
+  useEffect(() => {
+    api.get('/repositories').then(response => {
+      setRepo(response.data);
+    });
+  }, [])
+
   async function handleAddRepository() {
-    // TODO
+    await api.post('/repositories', {
+      id: '123as5-152882',
+      url: 'https://github.com/gabrielmaiaf/gabrielmaiaf',
+      title: `Disclaimer do usuário ${Date.now()}`,
+      techs: ['nodejs', 'react', 'react-native']
+    }).then(res => {
+      setRepo([...repo, res.data]);
+    })
   }
 
   async function handleRemoveRepository(id) {
-    // TODO
+    await api.delete(`/repositories/${id}`);
+
+    const newRepo = repo.filter(r => r.id !== id);
+
+    return setRepo([...newRepo]);
   }
 
   return (
     <div>
       <ul data-testid="repository-list">
-        <li>
-          Repositório 1
+        {repo.map(r => (
+          <li key={r.id}>
+            {r.title}
 
-          <button onClick={() => handleRemoveRepository(1)}>
-            Remover
-          </button>
-        </li>
+            <button type="button" onClick={() => handleRemoveRepository(r.id)}>
+              Remover
+            </button>
+          </li>
+        ))}
       </ul>
 
       <button onClick={handleAddRepository}>Adicionar</button>
